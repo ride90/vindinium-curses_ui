@@ -72,9 +72,9 @@ class Game:
 
     def process_data(self, state):
         """Parse the game state"""
-        self.set_url(state['viewUrl'])
-        self.process_hero(state['hero'])
-        self.process_game(state['game'])
+        self.set_url(state["viewUrl"])
+        self.process_hero(state["hero"])
+        self.process_game(state["game"])
 
     def set_url(self, url):
         """Set the game object url var"""
@@ -86,27 +86,26 @@ class Game:
 
     def process_game(self, game):
         """Process the game data"""
-        process = {'board': self.process_board,
-                   'heroes': self.process_heroes}
-        self.turn = game['turn']
-        self.max_turns = game['maxTurns']
-        self.finished = game['finished']
+        process = {"board": self.process_board, "heroes": self.process_heroes}
+        self.turn = game["turn"]
+        self.max_turns = game["maxTurns"]
+        self.finished = game["finished"]
         for key in sorted(game.keys()):  # TODO: board must go before heroes
             if key in process:
                 process[key](game[key])
 
     def process_board(self, board):
         """Process the board datas
-            - Retrieve walls locs, tavern locs
-            - Converts tiles in a displayable form"""
-        self.board_size = board['size']
-        tiles = board['tiles']
+        - Retrieve walls locs, tavern locs
+        - Converts tiles in a displayable form"""
+        self.board_size = board["size"]
+        tiles = board["tiles"]
         map_line = ""
         char = None
         for y in range(0, len(tiles), self.board_size * 2):
-            line = tiles[y:y + self.board_size * 2]
+            line = tiles[y : y + self.board_size * 2]
             for x in range(0, len(line), 2):
-                tile = line[x:x + 2]
+                tile = line[x : x + 2]
                 tile_coords = (y // self.board_size // 2, x // 2)
                 if tile[0] == " ":
                     # It's passable
@@ -121,7 +120,7 @@ class Game:
                     self.mines_locs.append(tile_coords)
                     # Handle mine ownership: '-' means no owner, otherwise it's a player ID
                     owner = tile[1]
-                    if owner == '-':
+                    if owner == "-":
                         self.mines[tile_coords] = None  # No owner
                     else:
                         self.mines[tile_coords] = int(owner)

@@ -9,11 +9,11 @@ from game import Game
 
 
 class MapElements(str, Enum):
-    OWNED_MINE = 'O'
-    HERO = '@'
-    MINE = '$'
-    ENEMY = 'H'
-    TAVERN = 'T'
+    OWNED_MINE = "O"
+    HERO = "@"
+    MINE = "$"
+    ENEMY = "H"
+    TAVERN = "T"
 
 
 class Directions(str, Enum):
@@ -82,8 +82,6 @@ class AIBase(ABC):
         """Decide the next move based on the current game state."""
         pass
 
-
-
     def mines(self):
         """Return a list of mine locations."""
         if self.game is None:
@@ -92,10 +90,15 @@ class AIBase(ABC):
 
     def enemies(self):
         """Return a list of enemy heroes."""
-        if self.game is None or getattr(self.game, 'hero', None) is None:
+        if self.game is None or getattr(self.game, "hero", None) is None:
             return []
         me = self.game.hero
-        return [h for h in self.game.heroes if h is not None and getattr(h, 'bot_id', None) != getattr(me, 'bot_id', None)]
+        return [
+            h
+            for h in self.game.heroes
+            if h is not None
+            and getattr(h, "bot_id", None) != getattr(me, "bot_id", None)
+        ]
 
     def taverns(self):
         """Return a list of enemy heroes."""
@@ -109,57 +112,94 @@ class AIBase(ABC):
             return None
         return self.game.hero
 
-
-
     def _package(self, path, action, decisions, hero_move):
         me = self.hero()
         taverns = self.taverns()
         mines = self.mines()
         enemies = self.enemies()
         print(f"{self.name}:  action: {action} hero_move: {hero_move}")
-        me_pos = getattr(me, 'pos', (0, 0))
+        me_pos = getattr(me, "pos", (0, 0))
         nearest_enemy = (
             min(
-                [e for e in enemies if getattr(e, 'pos', None) is not None],
-                key=lambda e: abs(getattr(e, 'pos', (0, 0))[0] - me_pos[0]) + abs(getattr(e, 'pos', (0, 0))[1] - me_pos[1])
-            ).pos if enemies and any(getattr(e, 'pos', None) is not None for e in enemies) else me_pos
+                [e for e in enemies if getattr(e, "pos", None) is not None],
+                key=lambda e: abs(getattr(e, "pos", (0, 0))[0] - me_pos[0])
+                + abs(getattr(e, "pos", (0, 0))[1] - me_pos[1]),
+            ).pos
+            if enemies and any(getattr(e, "pos", None) is not None for e in enemies)
+            else me_pos
         )
         nearest_mine = (
             min(
-                [m for m in mines if m is not None and isinstance(m, (tuple, list)) and len(m) == 2],
-                key=lambda m: abs(m[0] - me_pos[0]) + abs(m[1] - me_pos[1])
-            ) if mines and any(m is not None and isinstance(m, (tuple, list)) and len(m) == 2 for m in mines) else me_pos
+                [
+                    m
+                    for m in mines
+                    if m is not None and isinstance(m, (tuple, list)) and len(m) == 2
+                ],
+                key=lambda m: abs(m[0] - me_pos[0]) + abs(m[1] - me_pos[1]),
+            )
+            if mines
+            and any(
+                m is not None and isinstance(m, (tuple, list)) and len(m) == 2
+                for m in mines
+            )
+            else me_pos
         )
         nearest_tavern = (
             min(
-                [t for t in taverns if t is not None and isinstance(t, (tuple, list)) and len(t) == 2],
-                key=lambda t: abs(t[0] - me_pos[0]) + abs(t[1] - me_pos[1])
-            ) if taverns and any(t is not None and isinstance(t, (tuple, list)) and len(t) == 2 for t in taverns) else me_pos
+                [
+                    t
+                    for t in taverns
+                    if t is not None and isinstance(t, (tuple, list)) and len(t) == 2
+                ],
+                key=lambda t: abs(t[0] - me_pos[0]) + abs(t[1] - me_pos[1]),
+            )
+            if taverns
+            and any(
+                t is not None and isinstance(t, (tuple, list)) and len(t) == 2
+                for t in taverns
+            )
+            else me_pos
         )
-        self.prev_life = getattr(me, 'life', 0)
+        self.prev_life = getattr(me, "life", 0)
 
         # --- Logging decisions to CSV ---
         game = self.game
-        if game and hasattr(game, 'url') and game.url:
-            game_id = str(game.url).rstrip('/').split('/')[-1]
-            log_dir = 'moves_log'
+        if game and hasattr(game, "url") and game.url:
+            game_id = str(game.url).rstrip("/").split("/")[-1]
+            log_dir = "moves_log"
             os.makedirs(log_dir, exist_ok=True)
             log_file = os.path.join(log_dir, f"{self.name}_{game_id}.csv")
-            turn = getattr(game, 'turn', None)
-            gold = getattr(me, 'gold', None)
-            life = getattr(me, 'life', None)
-            num_mines = len(getattr(me, 'mines', []))
+            turn = getattr(game, "turn", None)
+            gold = getattr(me, "gold", None)
+            life = getattr(me, "life", None)
+            num_mines = len(getattr(me, "mines", []))
             move = str(hero_move)
             timestamp = datetime.now().isoformat()
             row = [timestamp, turn, action, move, gold, life, num_mines]
             write_header = not os.path.exists(log_file)
-            with open(log_file, 'a', newline='') as f:
+            with open(log_file, "a", newline="") as f:
                 writer = csv.writer(f)
                 if write_header:
-                    writer.writerow(['timestamp', 'turn', 'decision', 'move', 'gold', 'life', 'number_of_mines'])
+                    writer.writerow(
+                        [
+                            "timestamp",
+                            "turn",
+                            "decision",
+                            "move",
+                            "gold",
+                            "life",
+                            "number_of_mines",
+                        ]
+                    )
                 writer.writerow(row)
         # --- End logging ---
 
         return (
-            path, action, decisions, str(hero_move), nearest_enemy, nearest_mine, nearest_tavern
+            path,
+            action,
+            decisions,
+            str(hero_move),
+            nearest_enemy,
+            nearest_mine,
+            nearest_tavern,
         )

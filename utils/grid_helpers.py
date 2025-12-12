@@ -1,4 +1,4 @@
-def plot_path_on_map(grid, path, start_char='@', final_path_marker='*'):
+def plot_path_on_map(grid, path, start_char="@", final_path_marker="*"):
     """
     Modifies the grid to show the shortest path, where the hero steps *into* the target location.
 
@@ -19,7 +19,7 @@ def plot_path_on_map(grid, path, start_char='@', final_path_marker='*'):
 
     # Mark the path with '?' (excluding start and the final destination)
     for r, c in path[1:-1]:
-        mutable_grid[r][c] = '?'
+        mutable_grid[r][c] = "?"
 
     # Mark the final destination cell with the specified marker
     if len(path) > 0:  # Ensure path is not empty
@@ -60,7 +60,9 @@ def replace_map_values(map_grid, replacements, new_char):
         if 0 <= r < rows and 0 <= c < cols:
             mutable_grid[r][c] = new_char
         else:
-            print(f"Warning: Coordinates ({r}, {c}) are out of bounds for the map. Skipping replacement '{new_char}'.")
+            print(
+                f"Warning: Coordinates ({r}, {c}) are out of bounds for the map. Skipping replacement '{new_char}'."
+            )
 
     # Convert the mutable grid back to a list of strings
     return ["".join(row) for row in mutable_grid]

@@ -15,6 +15,7 @@ MIN_COLS = 150
 
 class tui:
     """The Terminal User Interface for Vindimium bot"""
+
     def __init__(self):
         self.running = True
         self.paused = False
@@ -85,9 +86,17 @@ class tui:
             curses.resizeterm(MIN_LINES, MIN_COLS)
             if not curses.is_term_resized(MIN_LINES, MIN_COLS):
                 self.quit_ui()
-                print ("Unable to change your terminal size. Your terminal must be at least", \
-                        MIN_LINES, "lines and", MIN_COLS, "columns and it actually has", \
-                        screen_y, "lines and", screen_x, "columns.")
+                print(
+                    "Unable to change your terminal size. Your terminal must be at least",
+                    MIN_LINES,
+                    "lines and",
+                    MIN_COLS,
+                    "columns and it actually has",
+                    screen_y,
+                    "lines and",
+                    screen_x,
+                    "columns.",
+                )
                 quit(1)
         # Screen is up
         curses.noecho()
@@ -96,7 +105,7 @@ class tui:
         self.stdscr.keypad(1)
         # - /screen init ----
 
-# - /init ---------------------------------------------------------------
+    # - /init ---------------------------------------------------------------
 
     def clear(self):
         """Refresh all windows"""
@@ -124,8 +133,12 @@ class tui:
     def refresh(self):
         """Refresh all windows"""
         self.stdscr.addstr(self.DATA_Y - 1, self.DATA_X + 1, "Game", curses.A_BOLD)
-        self.stdscr.addstr(self.PLAYERS_Y - 1, self.PLAYERS_X + 1, "Players", curses.A_BOLD)
-        self.stdscr.addstr(self.SUMMARY_Y - 1, self.SUMMARY_X + 1, "Games summary", curses.A_BOLD)
+        self.stdscr.addstr(
+            self.PLAYERS_Y - 1, self.PLAYERS_X + 1, "Players", curses.A_BOLD
+        )
+        self.stdscr.addstr(
+            self.SUMMARY_Y - 1, self.SUMMARY_X + 1, "Games summary", curses.A_BOLD
+        )
         self.stdscr.noutrefresh()
         self.data_win.noutrefresh()
         if self.map_win:
@@ -146,8 +159,7 @@ class tui:
             self.menu_win.noutrefresh()
         curses.doupdate()
 
-
-# - Draw game windows --------------------------------------------------
+    # - Draw game windows --------------------------------------------------
 
     def draw_game_windows(self):
         """Draw the windows needed for the game"""
@@ -164,29 +176,33 @@ class tui:
 
     def draw_data_win(self):
         """Draw main data window"""
-        self.data_win = curses.newwin(self.DATA_H, self.DATA_W, self.DATA_Y, self.DATA_X)
+        self.data_win = curses.newwin(
+            self.DATA_H, self.DATA_W, self.DATA_Y, self.DATA_X
+        )
         self.data_win.box()
         self.data_pan = curses.panel.new_panel(self.data_win)
         self.stdscr.addstr(self.DATA_Y - 1, self.DATA_X + 1, "Game", curses.A_BOLD)
-        data_lines = ["Playing",
-                        "Bot name",
-                        "Elo",
-                        "Elapsed time",
-                        "Turn",
-                        "Position",
-                        "Life",
-                        "Mine count",
-                        "Gold",
-                        "Move",
-                        "Action",
-                        "Nearest hero",
-                        "Nearest bar",
-                        "Nearest mine"]
+        data_lines = [
+            "Playing",
+            "Bot name",
+            "Elo",
+            "Elapsed time",
+            "Turn",
+            "Position",
+            "Life",
+            "Mine count",
+            "Gold",
+            "Move",
+            "Action",
+            "Nearest hero",
+            "Nearest bar",
+            "Nearest mine",
+        ]
         self.data_win.vline(1, 13, curses.ACS_VLINE, self.DATA_H)
         self.data_win.addch(0, 13, curses.ACS_TTEE)
-        self.data_win.addch(self.DATA_H-1, 13, curses.ACS_BTEE)
-        self.data_win.vline(9, 22, curses.ACS_VLINE, self.DATA_H-9)
-        self.data_win.addch(self.DATA_H-1, 22, curses.ACS_BTEE)
+        self.data_win.addch(self.DATA_H - 1, 13, curses.ACS_BTEE)
+        self.data_win.vline(9, 22, curses.ACS_VLINE, self.DATA_H - 9)
+        self.data_win.addch(self.DATA_H - 1, 22, curses.ACS_BTEE)
         y = 0
         for line in data_lines:
             self.data_win.addstr(y + 1, 1, line, curses.A_BOLD)
@@ -209,8 +225,12 @@ class tui:
 
     def draw_path_win(self):
         """Draw path & heuristic window"""
-        self.stdscr.addstr(self.PATH_Y - 1, self.PATH_X + 1, "Path and heuristic", curses.A_BOLD)
-        self.path_win = curses.newwin(self.PATH_H, self.PATH_W, self.PATH_Y, self.PATH_X)
+        self.stdscr.addstr(
+            self.PATH_Y - 1, self.PATH_X + 1, "Path and heuristic", curses.A_BOLD
+        )
+        self.path_win = curses.newwin(
+            self.PATH_H, self.PATH_W, self.PATH_Y, self.PATH_X
+        )
         self.path_win.box()
         self.path_pan = curses.panel.new_panel(self.path_win)
         self.path_win.addstr(1, 1, "Heuristic", curses.A_BOLD)
@@ -225,7 +245,9 @@ class tui:
 
     def draw_help_win(self):
         """Draw help window"""
-        self.help_win = curses.newwin(self.HELP_H, self.HELP_W, self.HELP_Y, self.HELP_X)
+        self.help_win = curses.newwin(
+            self.HELP_H, self.HELP_W, self.HELP_Y, self.HELP_X
+        )
         self.help_pan = curses.panel.new_panel(self.help_win)
         self.help_win.bkgd(curses.color_pair(4) + curses.A_REVERSE)
         self.help_win.addstr(0, 1, "Q", curses.A_BOLD + curses.A_STANDOUT)
@@ -237,40 +259,46 @@ class tui:
 
     def draw_players_win(self):
         """Draw players window"""
-        self.stdscr.addstr(self.PLAYERS_Y - 1, self.PLAYERS_X + 1, "Players", curses.A_BOLD)
-        self.players_win = curses.newwin(self.PLAYERS_H, self.PLAYERS_W, self.PLAYERS_Y, self.PLAYERS_X)
+        self.stdscr.addstr(
+            self.PLAYERS_Y - 1, self.PLAYERS_X + 1, "Players", curses.A_BOLD
+        )
+        self.players_win = curses.newwin(
+            self.PLAYERS_H, self.PLAYERS_W, self.PLAYERS_Y, self.PLAYERS_X
+        )
         self.players_win.box()
         self.players_pan = curses.panel.new_panel(self.players_win)
-        players_lines = ["Name",
-                        "User ID",
-                        "Bot ID",
-                        "Elo",
-                        "Position",
-                        "Life",
-                        "Mine count",
-                        "Gold",
-                        "Spawn pos",
-                        "Crashed"]
+        players_lines = [
+            "Name",
+            "User ID",
+            "Bot ID",
+            "Elo",
+            "Position",
+            "Life",
+            "Mine count",
+            "Gold",
+            "Spawn pos",
+            "Crashed",
+        ]
 
-        self.players_win.vline(1, 11, curses.ACS_VLINE, self.PLAYERS_H-2)
-        self.players_win.vline(1, 29, curses.ACS_VLINE, self.PLAYERS_H-2)
-        self.players_win.vline(1, 47, curses.ACS_VLINE, self.PLAYERS_H-2)
+        self.players_win.vline(1, 11, curses.ACS_VLINE, self.PLAYERS_H - 2)
+        self.players_win.vline(1, 29, curses.ACS_VLINE, self.PLAYERS_H - 2)
+        self.players_win.vline(1, 47, curses.ACS_VLINE, self.PLAYERS_H - 2)
         self.players_win.addch(0, 11, curses.ACS_TTEE)
         self.players_win.addch(0, 29, curses.ACS_TTEE)
         self.players_win.addch(0, 47, curses.ACS_TTEE)
-        self.players_win.addch(self.PLAYERS_H-1, 11, curses.ACS_BTEE)
-        self.players_win.addch(self.PLAYERS_H-1, 29, curses.ACS_BTEE)
-        self.players_win.addch(self.PLAYERS_H-1, 47, curses.ACS_BTEE)
+        self.players_win.addch(self.PLAYERS_H - 1, 11, curses.ACS_BTEE)
+        self.players_win.addch(self.PLAYERS_H - 1, 29, curses.ACS_BTEE)
+        self.players_win.addch(self.PLAYERS_H - 1, 47, curses.ACS_BTEE)
         y = 0
         for line in players_lines:
-            self.players_win.addstr(y+1, 1, line, curses.A_BOLD)
-            if y < len(players_lines)*2 - 2:
+            self.players_win.addstr(y + 1, 1, line, curses.A_BOLD)
+            if y < len(players_lines) * 2 - 2:
                 self.players_win.hline(y + 2, 1, curses.ACS_HLINE, self.PLAYERS_W - 2)
                 self.players_win.addch(y + 2, 0, curses.ACS_LTEE)
                 self.players_win.addch(y + 2, 11, curses.ACS_PLUS)
                 self.players_win.addch(y + 2, 29, curses.ACS_PLUS)
                 self.players_win.addch(y + 2, 47, curses.ACS_PLUS)
-                self.players_win.addch(y + 2, self.PLAYERS_W-1, curses.ACS_RTEE)
+                self.players_win.addch(y + 2, self.PLAYERS_W - 1, curses.ACS_RTEE)
             y += 2
 
     def draw_time_win(self):
@@ -284,8 +312,12 @@ class tui:
 
     def draw_summary_win(self):
         """Draw sumary window"""
-        self.stdscr.addstr(self.SUMMARY_Y - 1, self.SUMMARY_X + 1, "Games summary", curses.A_BOLD)
-        self.summary_win = curses.newwin(self.SUMMARY_H, self.SUMMARY_W, self.SUMMARY_Y, self.SUMMARY_X)
+        self.stdscr.addstr(
+            self.SUMMARY_Y - 1, self.SUMMARY_X + 1, "Games summary", curses.A_BOLD
+        )
+        self.summary_win = curses.newwin(
+            self.SUMMARY_H, self.SUMMARY_W, self.SUMMARY_Y, self.SUMMARY_X
+        )
         self.summary_pan = curses.panel.new_panel(self.summary_win)
         self.summary_win.box()
         self.summary_win.vline(1, 10, curses.ACS_VLINE, self.SUMMARY_H - 2)
@@ -300,14 +332,19 @@ class tui:
         self.summary_win.addstr(3, 1, "Won", curses.A_BOLD)
         self.summary_win.addstr(5, 1, "Timed out", curses.A_BOLD)
 
-# MAP ------------------------------------------------------------------
+    # MAP ------------------------------------------------------------------
 
     def draw_map(self, board_map, path, heroes):
         """Draw the map"""
         board_size = len(board_map)
         self.MAP_H = board_size
         self.MAP_W = board_size
-        self.stdscr.addstr(self.MAP_Y - 1, self.MAP_X + 1, "Map ("+str(board_size)+"X"+str(board_size)+")", curses.A_BOLD)
+        self.stdscr.addstr(
+            self.MAP_Y - 1,
+            self.MAP_X + 1,
+            "Map (" + str(board_size) + "X" + str(board_size) + ")",
+            curses.A_BOLD,
+        )
         self.stdscr.noutrefresh()
         if self.map_win:
             x, y = self.map_win.getmaxyx()
@@ -324,7 +361,9 @@ class tui:
                 self.map_win.noutrefresh()
         else:
             # map doesn't exist
-            self.map_win = curses.newwin(board_size + 2, board_size + 2, self.MAP_Y, self.MAP_X)
+            self.map_win = curses.newwin(
+                board_size + 2, board_size + 2, self.MAP_Y, self.MAP_X
+            )
             self.map_pan = curses.panel.new_panel(self.map_win)
             # Time line (Cost cpu time)
             self.draw_time_win()
@@ -334,7 +373,12 @@ class tui:
         if path is None:
             path = []
         for cell in path:
-            self.map_win.addch(cell[0]+1, cell[1] + 1, curses.ACS_BULLET, curses.color_pair(3) + curses.A_BOLD)
+            self.map_win.addch(
+                cell[0] + 1,
+                cell[1] + 1,
+                curses.ACS_BULLET,
+                curses.color_pair(3) + curses.A_BOLD,
+            )
         # Draw map content
         y = 0
         for line in board_map:
@@ -371,10 +415,9 @@ class tui:
                 x = x + 1
             y = y + 1
 
+    # / Draw window --------------------------------------------------------
 
-# / Draw window --------------------------------------------------------
-
-# Diplay functions -----------------------------------------------------
+    # Diplay functions -----------------------------------------------------
 
     # Following methods are used to display data at
     # the good place. Names are explicit.
@@ -410,10 +453,10 @@ class tui:
                 self.players_win.addstr(15, x, str(hero.gold))
                 self.players_win.addstr(17, x, str(hero.spawn_pos))
                 self.players_win.addstr(19, x, str(hero.crashed))
-                x += 18 #  player horizontal offset
+                x += 18  #  player horizontal offset
             if int(hero.gold) > max_gold:
                 max_gold = int(hero.gold)
-                gold_winner =  str(hero.bot_id)
+                gold_winner = str(hero.bot_id)
                 gold_pos = x - 2
             if int(hero.mine_count) > max_mine:
                 max_mine = int(hero.mine_count)
@@ -422,14 +465,18 @@ class tui:
         if gold_winner == str(bot_id):
             self.data_win.addstr(17, 21, "$", curses.A_BOLD + curses.color_pair(4))
         elif gold_pos > 0:
-            self.players_win.addstr(15, gold_pos, "$", curses.A_BOLD + curses.color_pair(4))
+            self.players_win.addstr(
+                15, gold_pos, "$", curses.A_BOLD + curses.color_pair(4)
+            )
         if mine_winner == str(bot_id):
             self.data_win.addstr(15, 21, "*", curses.A_BOLD + curses.color_pair(4))
         elif mine_pos > 0:
-            self.players_win.addstr(13, mine_pos, "*", curses.A_BOLD + curses.color_pair(4))
+            self.players_win.addstr(
+                13, mine_pos, "*", curses.A_BOLD + curses.color_pair(4)
+            )
 
     def display_url(self, url):
-        url = url[url.rfind("/")+1:]
+        url = url[url.rfind("/") + 1 :]
         self.data_win.addstr(1, 14, str(url))
 
     def display_bot_name(self, name):
@@ -438,8 +485,8 @@ class tui:
     def display_turn(self, turn, max_turns):
         self.clear_data_cell((9, 14), 8)
         self.clear_data_cell((9, 23), 8)
-        self.data_win.addstr(9, 23, str(turn)+"/"+str(max_turns), curses.A_BOLD)
-        self.data_win.addstr(9, 14, str(turn+1)+"/"+str(max_turns), curses.A_BOLD)
+        self.data_win.addstr(9, 23, str(turn) + "/" + str(max_turns), curses.A_BOLD)
+        self.data_win.addstr(9, 14, str(turn + 1) + "/" + str(max_turns), curses.A_BOLD)
 
     def display_elapsed(self, elapsed):
         self.clear_data_cell((7, 14), 17)
@@ -556,24 +603,24 @@ class tui:
         self.path_win.hline(1, 14, " ", 51)
         d = ""
         for h in decision:
-            d += str(h[0])+": "+str(h[1])+" | "
+            d += str(h[0]) + ": " + str(h[1]) + " | "
         self.path_win.addstr(1, 14, d)
 
     def display_summary(self, played, won, timed_out):
-        data = ['', played, '', won, '', timed_out]
+        data = ["", played, "", won, "", timed_out]
         for i in range(1, 7, 2):
             self.summary_win.hline(i, 11, " ", 8)
             self.summary_win.addstr(i, 11, data[i])
 
     def display_path(self, path):
         self.path_win.hline(3, 14, " ", 51)
-        path = str(path).strip('[').strip(']')[0:48]+"..."
+        path = str(path).strip("[").strip("]")[0:48] + "..."
         self.path_win.addstr(3, 14, path)
 
     def clear_data_cell(self, pos, length):
         self.data_win.hline(pos[0], pos[1], " ", length)
 
-# TIME CURSOR ----------------------------------------------------------
+    # TIME CURSOR ----------------------------------------------------------
 
     def move_time_cursor(self, pos):
         self.time_win.box()
@@ -592,20 +639,19 @@ class tui:
             self.time_win.addch(2, pos + 1, curses.ACS_BTEE)
         self.time_win.addstr(1, pos, " ", curses.color_pair(4) + curses.A_REVERSE)
 
-
-# LOG ------------------------------------------------------------------
+    # LOG ------------------------------------------------------------------
 
     def append_log(self, data):
-        """Append log with new data """
+        """Append log with new data"""
         # Convert data to string and clean it
         data_str = str(data)
         # Remove HTML tags and clean up whitespace
-        data_str = re.sub(r'<[^>]+>', '', data_str)
-        data_str = re.sub(r'\s+', ' ', data_str).strip()
-        
+        data_str = re.sub(r"<[^>]+>", "", data_str)
+        data_str = re.sub(r"\s+", " ", data_str).strip()
+
         # Split into lines that fit the window width
         for i in range(0, len(data_str), self.LOG_W - 2):
-            line = data_str[i:i+self.LOG_W - 2]
+            line = data_str[i : i + self.LOG_W - 2]
             if line.strip():  # Only add non-empty lines
                 self.log_entries.append(line)
         self.purge_log()
@@ -615,7 +661,7 @@ class tui:
         """Purge log of oldest entries"""
         diff = len(self.log_entries) - (self.LOG_H - self.HELP_H - 2)
         if diff > 0:
-            self.log_entries = self.log_entries[diff - 1:len(self.log_entries)]
+            self.log_entries = self.log_entries[diff - 1 : len(self.log_entries)]
 
     def display_log(self):
         """Display log entries"""
@@ -625,11 +671,11 @@ class tui:
                 try:
                     if i < len(self.log_entries):
                         attr = 0
-                        regexp = re.compile('Error')
+                        regexp = re.compile("Error")
                         if regexp.search(self.log_entries[i]) is not None:
                             attr = curses.color_pair(3) + curses.A_BOLD
                         # Ensure the line fits in the window
-                        line = self.log_entries[i][:self.LOG_W - 2]
+                        line = self.log_entries[i][: self.LOG_W - 2]
                         self.log_win.addstr(i, 1, line, attr)
                 except IndexError:
                     # No more entries in log_entries
@@ -637,11 +683,13 @@ class tui:
                 except Exception as e:
                     self.quit_ui()
                     print(f"Error at display_log: {str(e)}")
-                    print(f"i={i}, log entry length={len(self.log_entries[i]) if i < len(self.log_entries) else 'N/A'}")
+                    print(
+                        f"i={i}, log entry length={len(self.log_entries[i]) if i < len(self.log_entries) else 'N/A'}"
+                    )
                     print(f"LOG_W={self.LOG_W}, LOG_H={self.LOG_H}")
                     quit(1)
 
-# Setup windows --------------------------------------------------------
+    # Setup windows --------------------------------------------------------
     def ask_action(self):
         """Return the inputed value"""
         k = self.menu_win.getkey()
@@ -658,7 +706,12 @@ class tui:
                 if num > 0:
                     return True
             except (ValueError, TypeError):
-                self.menu_win.addstr(15, offset + 7, "Please, input an integer greater than 0.", curses.color_pair(3))
+                self.menu_win.addstr(
+                    15,
+                    offset + 7,
+                    "Please, input an integer greater than 0.",
+                    curses.color_pair(3),
+                )
                 self.menu_win.refresh()
         return False
 
@@ -688,7 +741,9 @@ class tui:
             check = urlparse(url)
             if len(check.scheme) > 0 and len(check.netloc) > 0:
                 return True
-            self.menu_win.addstr(15, offset + 12, "Please, input a valid URL.", curses.color_pair(3))
+            self.menu_win.addstr(
+                15, offset + 12, "Please, input a valid URL.", curses.color_pair(3)
+            )
             self.menu_win.refresh()
         return False
 
@@ -700,11 +755,11 @@ class tui:
         if len(url) > 0:
             # text_box.edit return a null char at start:(
             check = urlparse(url)
-            if len(check.scheme) > 0 and \
-                    len(check.netloc) > 0 and \
-                    len(check.path) > 0:
+            if len(check.scheme) > 0 and len(check.netloc) > 0 and len(check.path) > 0:
                 return True
-            self.menu_win.addstr(15, offset + 12, "Please, input a valid URL.", curses.color_pair(3))
+            self.menu_win.addstr(
+                15, offset + 12, "Please, input a valid URL.", curses.color_pair(3)
+            )
             self.menu_win.refresh()
         return False
 
@@ -717,7 +772,9 @@ class tui:
             # text_box.edit return a null char at start
             if os.path.exists(path):
                 return True
-            self.menu_win.addstr(15, offset + 12, "Please, input a valid path.", curses.color_pair(3))
+            self.menu_win.addstr(
+                15, offset + 12, "Please, input a valid path.", curses.color_pair(3)
+            )
             self.menu_win.refresh()
         return False
 
@@ -734,7 +791,9 @@ class tui:
                     return True
             except (TypeError, AttributeError):
                 pass
-            self.menu_win.addstr(15, offset + 12, "Please, input a a valid key.", curses.color_pair(3))
+            self.menu_win.addstr(
+                15, offset + 12, "Please, input a a valid key.", curses.color_pair(3)
+            )
             self.menu_win.refresh()
         return False
 
@@ -745,17 +804,22 @@ class tui:
         self.menu_win.clear()
         self.menu_win.box()
         self.menu_pan = curses.panel.new_panel(self.menu_win)
-        title1 = "__     ___           _ _       _"
-        title2 = "\ \   / (_)_ __   __| (_)_ __ (_)_   _ _ __ ___"
-        title3 = " \ \ / /| | '_ \ / _` | | '_ \| | | | | '_ ` _ \\"
-        title4 = "  \ V / | | | | | (_| | | | | | | |_| | | | | | |"
-        title5 = "   \_/  |_|_| |_|\__,_|_|_| |_|_|\__,_|_| |_| |_|"
+        title1 = r"__     ___           _ _       _"
+        title2 = r"\ \   / (_)_ __   __| (_)_ __ (_)_   _ _ __ ___"
+        title3 = r" \ \ / /| | '_ \ / _` | | '_ \| | | | | '_ ` _ \\"
+        title4 = r"  \ V / | | | | | (_| | | | | | | |_| | | | | | |"
+        title5 = r"   \_/  |_|_| |_|\__,_|_|_| |_|_|\__,_|_| |_| |_|"
         self.menu_win.addstr(1, offset, title1, curses.A_BOLD + curses.color_pair(4))
         self.menu_win.addstr(2, offset, title2, curses.A_BOLD + curses.color_pair(4))
         self.menu_win.addstr(3, offset, title3, curses.A_BOLD + curses.color_pair(4))
         self.menu_win.addstr(4, offset, title4, curses.A_BOLD + curses.color_pair(4))
         self.menu_win.addstr(5, offset, title5, curses.A_BOLD + curses.color_pair(4))
-        self.menu_win.addstr(7, offset + 8, "Welcome to the Vindinium curses client", curses.A_BOLD + curses.A_UNDERLINE)
+        self.menu_win.addstr(
+            7,
+            offset + 8,
+            "Welcome to the Vindinium curses client",
+            curses.A_BOLD + curses.A_UNDERLINE,
+        )
 
     def ask_main_menu(self):
         """Display main menu window and ask for choice"""
@@ -763,7 +827,9 @@ class tui:
         offset = screen_x // 2 - 25
         choice = "0"
         options = ["1", "2", "3", "4", "5"]
-        self.menu_win = curses.newwin(self.MENU_H, self.MENU_W, self.MENU_Y, self.MENU_X)
+        self.menu_win = curses.newwin(
+            self.MENU_H, self.MENU_W, self.MENU_Y, self.MENU_X
+        )
         self.draw_banner()
         self.menu_win.addstr(9, offset + 8, "Please, choose an option:", curses.A_BOLD)
         self.menu_win.addstr(11, offset + 10, "1", curses.A_BOLD)
@@ -787,15 +853,29 @@ class tui:
         choice = "0"
         options = ["1", "2"]
         self.draw_banner()
-        self.menu_win.addstr(9, offset - 15, "Please, choose a game mode:", curses.A_BOLD)
+        self.menu_win.addstr(
+            9, offset - 15, "Please, choose a game mode:", curses.A_BOLD
+        )
         self.menu_win.addstr(11, offset - 15, "1", curses.A_BOLD)
         self.menu_win.addstr(11, offset - 13, "- Arena mode:", curses.A_BOLD)
-        self.menu_win.addstr(12, offset - 11, "In this mode you will fight against 3 heroes as greedy and thirsty as you are.")
+        self.menu_win.addstr(
+            12,
+            offset - 11,
+            "In this mode you will fight against 3 heroes as greedy and thirsty as you are.",
+        )
         self.menu_win.addstr(13, offset - 11, "There can be only one !")
         self.menu_win.addstr(15, offset - 15, "2", curses.A_BOLD)
         self.menu_win.addstr(15, offset - 13, "- Training mode:", curses.A_BOLD)
-        self.menu_win.addstr(16, offset - 11, "In this mode you will fight against 3 dummy heroes as useless and stupid as yo^W random A.I bots are.")
-        self.menu_win.addstr(17, offset - 11, "Thus, you will earn no glory, no fame nor shame. Your Elo score will not be impacted by your victories or defeats.")
+        self.menu_win.addstr(
+            16,
+            offset - 11,
+            "In this mode you will fight against 3 dummy heroes as useless and stupid as yo^W random A.I bots are.",
+        )
+        self.menu_win.addstr(
+            17,
+            offset - 11,
+            "Thus, you will earn no glory, no fame nor shame. Your Elo score will not be impacted by your victories or defeats.",
+        )
         while choice not in options:
             choice = self.ask_action()
         return choice
@@ -854,10 +934,16 @@ class tui:
         if game_mode == "training":
             # Manage display offset according to len(game_mode)
             offset_2 = 17
-        self.menu_win.addstr(10, offset + offset_2, game_mode.upper()+" MODE", curses.A_BOLD)
+        self.menu_win.addstr(
+            10, offset + offset_2, game_mode.upper() + " MODE", curses.A_BOLD
+        )
         self.menu_win.addstr(13, offset + 6, "Server URL:", curses.A_BOLD)
-        curses.textpad.rectangle(self.menu_win, 12, offset + 18, 14, offset + 78)  # Increased width from 48 to 78
-        self.input_win = self.menu_win.subwin(1, 59, 13, offset + 19)  # Increased width from 29 to 59
+        curses.textpad.rectangle(
+            self.menu_win, 12, offset + 18, 14, offset + 78
+        )  # Increased width from 48 to 78
+        self.input_win = self.menu_win.subwin(
+            1, 59, 13, offset + 19
+        )  # Increased width from 29 to 59
         self.input_win.bkgd(curses.color_pair(4) + curses.A_REVERSE)
         self.input_win.addstr(0, 0, server_url)
         input_pan = curses.panel.new_panel(self.input_win)
@@ -881,7 +967,9 @@ class tui:
         if game_mode == "training":
             # Manage display offset according to len(game_mode)
             offset_2 = 17
-        self.menu_win.addstr(10, offset + offset_2, game_mode.upper()+" MODE", curses.A_BOLD)
+        self.menu_win.addstr(
+            10, offset + offset_2, game_mode.upper() + " MODE", curses.A_BOLD
+        )
         self.menu_win.addstr(13, offset + 6, "Player key:", curses.A_BOLD)
         curses.textpad.rectangle(self.menu_win, 12, offset + 18, 14, offset + 48)
         self.input_win = self.menu_win.subwin(1, 29, 13, offset + 19)
@@ -947,7 +1035,9 @@ class tui:
         offset = screen_x // 2 - 25
         choice = "0"
         options = ["1", "2"]
-        self.menu_win = curses.newwin(self.MENU_H, self.MENU_W, self.MENU_Y, self.MENU_X)
+        self.menu_win = curses.newwin(
+            self.MENU_H, self.MENU_W, self.MENU_Y, self.MENU_X
+        )
         self.draw_banner()
         self.menu_win.addstr(11, offset + 8, "Save configuration ?", curses.A_BOLD)
         self.menu_win.addstr(13, offset + 10, "1", curses.A_BOLD)
@@ -966,7 +1056,9 @@ class tui:
         offset = screen_x // 2 - 25
         choice = "0"
         options = ["1", "2"]
-        self.menu_win = curses.newwin(self.MENU_H, self.MENU_W, self.MENU_Y, self.MENU_X)
+        self.menu_win = curses.newwin(
+            self.MENU_H, self.MENU_W, self.MENU_Y, self.MENU_X
+        )
         self.draw_banner()
         self.menu_win.addstr(11, offset + 8, "Play game ?", curses.A_BOLD)
         self.menu_win.addstr(13, offset + 10, "1", curses.A_BOLD)
@@ -985,7 +1077,9 @@ class tui:
         offset = screen_x // 2 - 25
         choice = "0"
         options = ["1", "2", "3", "4", "5", "6"]
-        self.menu_win = curses.newwin(self.MENU_H, self.MENU_W, self.MENU_Y, self.MENU_X)
+        self.menu_win = curses.newwin(
+            self.MENU_H, self.MENU_W, self.MENU_Y, self.MENU_X
+        )
         self.draw_banner()
         self.menu_win.addstr(9, offset + 8, "Please, choose a map:", curses.A_BOLD)
         self.menu_win.addstr(11, offset + 10, "1", curses.A_BOLD)
@@ -1004,7 +1098,7 @@ class tui:
             choice = self.ask_action()
         return choice
 
-# QUIT -----------------------------------------------------------------
+    # QUIT -----------------------------------------------------------------
 
     def ask_quit(self):
         """What don't you understand in 'press q to quit' ? ;-)"""

@@ -17,41 +17,55 @@ class AI(AIBase):
         return new_ai
 
     def decide(self):
-        if self.game is None or getattr(self.game, 'hero', None) is None:
-            return self._package(path=[(0, 0)], action=Actions.WAIT, decisions={}, hero_move=Directions.STAY)
+        if self.game is None or getattr(self.game, "hero", None) is None:
+            return self._package(
+                path=[(0, 0)],
+                action=Actions.WAIT,
+                decisions={},
+                hero_move=Directions.STAY,
+            )
         hero = self.game.hero
         game = self.game
-        remaining_turns = getattr(game, 'max_turns', 0) - getattr(game, 'turn', 0)
-        enemies = [h for h in getattr(game, 'heroes', []) if
-                   getattr(h, 'bot_id', None) != getattr(hero, 'bot_id', None)]
-        enemies_by_mines = sorted(enemies, key=lambda h: getattr(h, 'mine_count', 0), reverse=True)
+        remaining_turns = getattr(game, "max_turns", 0) - getattr(game, "turn", 0)
+        enemies = [
+            h
+            for h in getattr(game, "heroes", [])
+            if getattr(h, "bot_id", None) != getattr(hero, "bot_id", None)
+        ]
+        enemies_by_mines = sorted(
+            enemies, key=lambda h: getattr(h, "mine_count", 0), reverse=True
+        )
 
-        owned_mines = set(getattr(hero, 'mines', []))
-        game_map = getattr(self.game, 'board_map', [])
-        game_map = replace_map_values(game_map, owned_mines, 'O')
+        owned_mines = set(getattr(hero, "mines", []))
+        game_map = getattr(self.game, "board_map", [])
+        game_map = replace_map_values(game_map, owned_mines, "O")
 
         # --- Recharge if next to tavern, have gold, and life < 65 ---
-        taverns = set(getattr(self.game, 'taverns_locs', []))
-        y, x = getattr(hero, 'pos', (0, 0))
+        taverns = set(getattr(self.game, "taverns_locs", []))
+        y, x = getattr(hero, "pos", (0, 0))
         adjacent = [(y - 1, x), (y + 1, x), (y, x - 1), (y, x + 1)]
-        if any(t in taverns for t in adjacent) and getattr(hero, 'gold', 0) >= 2 and getattr(hero, 'life', 100) < 65:
+        if (
+            any(t in taverns for t in adjacent)
+            and getattr(hero, "gold", 0) >= 2
+            and getattr(hero, "life", 100) < 65
+        ):
             # Move to the adjacent tavern
             for t in adjacent:
                 if t in taverns:
-                    path = [getattr(hero, 'pos', (0, 0)), t]
-                    move = Directions.get_direction(getattr(hero, 'pos', (0, 0)), t)
+                    path = [getattr(hero, "pos", (0, 0)), t]
+                    move = Directions.get_direction(getattr(hero, "pos", (0, 0)), t)
                     return self._package(
                         path=path,
                         action=Actions.NEAREST_TAVERN,
                         decisions=[Actions.NEAREST_TAVERN],
-                        hero_move=move
+                        hero_move=move,
                     )
         # --- End recharge logic ---
 
         is_leading = all(hero.mine_count >= e.mine_count for e in enemies)
 
         just_respawned = (
-                self.prev_life is not None and self.prev_life <= 0 and hero.life == 100
+            self.prev_life is not None and self.prev_life <= 0 and hero.life == 100
         )
 
         pct = game.turn / game.max_turns
@@ -79,11 +93,17 @@ class AI(AIBase):
                 for enemy in enemies:
                     path, distance = bfs_from_xy_to_xy(game_map, enemy.pos, mine_pos)
                     if distance < 3 and hero.life > enemy.life + distance:
-                        intercept_pathA, intercept_distanceA = bfs_from_xy_to_xy(game_map, hero.pos, path[0])
-                        intercept_pathB, intercept_distanceB = bfs_from_xy_to_xy(game_map, hero.pos, mine_pos)
-                        intercept_path, intercept_distance = (intercept_pathA,
-                                                              intercept_distanceA) if intercept_distanceA < intercept_distanceB else (
-                            intercept_pathB, intercept_distanceB)
+                        intercept_pathA, intercept_distanceA = bfs_from_xy_to_xy(
+                            game_map, hero.pos, path[0]
+                        )
+                        intercept_pathB, intercept_distanceB = bfs_from_xy_to_xy(
+                            game_map, hero.pos, mine_pos
+                        )
+                        intercept_path, intercept_distance = (
+                            (intercept_pathA, intercept_distanceA)
+                            if intercept_distanceA < intercept_distanceB
+                            else (intercept_pathB, intercept_distanceB)
+                        )
                         if len(intercept_path) > 0:
                             self.explore_path = None
                             self.explore_objective = None
@@ -91,7 +111,9 @@ class AI(AIBase):
             return None
 
         def end_game_if():
-            path, distance = bfs_from_xy_to_nearest_char(game_map, hero.pos, MapElements.TAVERN)
+            path, distance = bfs_from_xy_to_nearest_char(
+                game_map, hero.pos, MapElements.TAVERN
+            )
             if phase == "end" and is_leading and distance <= remaining_turns:
                 self.explore_path = None
                 self.explore_objective = None
@@ -100,7 +122,9 @@ class AI(AIBase):
                 return None
 
         def do_nearest_if():
-            path, distance = bfs_from_xy_to_nearest_char(game_map, hero.pos, MapElements.MINE)
+            path, distance = bfs_from_xy_to_nearest_char(
+                game_map, hero.pos, MapElements.MINE
+            )
             if distance < remaining_turns and calculate_mine_value(distance):
                 self.explore_path = None
                 self.explore_objective = None
@@ -111,7 +135,11 @@ class AI(AIBase):
         def attack_richest_if():
             richest = enemies_by_mines[0]
             path, distance = bfs_from_xy_to_xy(game_map, hero.pos, richest.pos)
-            if distance < remaining_turns and hero.life - distance - 1 >= richest.life and hero.life > critical_hp + distance * 5:
+            if (
+                distance < remaining_turns
+                and hero.life - distance - 1 >= richest.life
+                and hero.life > critical_hp + distance * 5
+            ):
                 if richest.mine_count >= 3:
                     self.explore_path = None
                     self.explore_objective = None
@@ -123,22 +151,42 @@ class AI(AIBase):
             return None
 
         def opportunistic_kill_if():
-            path, distance = bfs_from_xy_to_nearest_char(game_map, hero.pos, MapElements.ENEMY)
+            path, distance = bfs_from_xy_to_nearest_char(
+                game_map, hero.pos, MapElements.ENEMY
+            )
             if len(path) > 0:
                 enemy_position = path[-1]
-                enemy = [e for e in enemies if e.pos[0] == enemy_position[0] and e.pos[1] == enemy_position[1]]
-                if distance < 4 and len(enemy) > 0 and enemy[0].life <= hero.life - distance - 1:
+                enemy = [
+                    e
+                    for e in enemies
+                    if e.pos[0] == enemy_position[0] and e.pos[1] == enemy_position[1]
+                ]
+                if (
+                    distance < 4
+                    and len(enemy) > 0
+                    and enemy[0].life <= hero.life - distance - 1
+                ):
                     self.explore_path = None
                     self.explore_objective = None
                     return path, Actions.ATTACK_NEAREST
             return None
 
         def attack_nearest_if():
-            path, distance = bfs_from_xy_to_nearest_char(game_map, hero.pos, MapElements.ENEMY)
+            path, distance = bfs_from_xy_to_nearest_char(
+                game_map, hero.pos, MapElements.ENEMY
+            )
             if len(path) > 0:
                 enemy_position = path[-1]
-                enemy = [e for e in enemies if e.pos[0] == enemy_position[0] and e.pos[1] == enemy_position[1]]
-                if distance < remaining_turns and len(enemy) > 0 and enemy[0].life <= hero.life - distance - 1:
+                enemy = [
+                    e
+                    for e in enemies
+                    if e.pos[0] == enemy_position[0] and e.pos[1] == enemy_position[1]
+                ]
+                if (
+                    distance < remaining_turns
+                    and len(enemy) > 0
+                    and enemy[0].life <= hero.life - distance - 1
+                ):
                     self.explore_path = None
                     self.explore_objective = None
                     return path, Actions.ATTACK_NEAREST
@@ -154,9 +202,15 @@ class AI(AIBase):
             return None
 
         def go_to_tavern_if():
-            path, distance = bfs_from_xy_to_nearest_char(game_map, hero.pos, MapElements.TAVERN)
-            if (distance < remaining_turns and hero.life < critical_hp and hero.gold >= 2 and (
-                    hero.life + 50 - distance) * hero.mine_count > 2):
+            path, distance = bfs_from_xy_to_nearest_char(
+                game_map, hero.pos, MapElements.TAVERN
+            )
+            if (
+                distance < remaining_turns
+                and hero.life < critical_hp
+                and hero.gold >= 2
+                and (hero.life + 50 - distance) * hero.mine_count > 2
+            ):
                 self.explore_path = None
                 self.explore_objective = None
                 return path, Actions.NEAREST_TAVERN
@@ -164,9 +218,17 @@ class AI(AIBase):
 
         def suicide():
             if hero.mine_count == 0 and hero.gold == 0:
-                path_1, distance_1 = bfs_from_xy_to_nearest_char(game_map, hero.pos, MapElements.ENEMY)
-                path_2, distance_2 = bfs_from_xy_to_nearest_char(game_map, hero.pos, MapElements.MINE)
-                path, distance = (path_1, distance_1) if distance_1 < distance_2 else (path_2, distance_2)
+                path_1, distance_1 = bfs_from_xy_to_nearest_char(
+                    game_map, hero.pos, MapElements.ENEMY
+                )
+                path_2, distance_2 = bfs_from_xy_to_nearest_char(
+                    game_map, hero.pos, MapElements.MINE
+                )
+                path, distance = (
+                    (path_1, distance_1)
+                    if distance_1 < distance_2
+                    else (path_2, distance_2)
+                )
                 if distance < remaining_turns * 2:
                     self.explore_path = None
                     self.explore_objective = None
@@ -174,6 +236,7 @@ class AI(AIBase):
             return None
 
         import random
+
         def explore_if_factory(objective):
             def inner():
                 # Default objective if not set
@@ -191,33 +254,42 @@ class AI(AIBase):
 
                 # Determine target based on objective
                 if self.explore_objective == "attack_enemy":
-                    target_enemy = max(enemies, key=lambda e: e.mine_count, default=None)
+                    target_enemy = max(
+                        enemies, key=lambda e: e.mine_count, default=None
+                    )
                     if not target_enemy:
                         return None
                     target_pos = target_enemy.pos
                 elif self.explore_objective == "take_unowned_mine":
-                    unowned_mines = [m for m in getattr(game, 'mines', []) if m not in owned_mines]
+                    unowned_mines = [
+                        m for m in getattr(game, "mines", []) if m not in owned_mines
+                    ]
                     if not unowned_mines:
                         return None
                     # Pick the farthest unowned mine to encourage exploration
-                    unowned_mines = sorted(unowned_mines,
-                                           key=lambda pos: abs(pos[0] - hero.pos[0]) + abs(pos[1] - hero.pos[1]),
-                                           reverse=True)
+                    unowned_mines = sorted(
+                        unowned_mines,
+                        key=lambda pos: abs(pos[0] - hero.pos[0])
+                        + abs(pos[1] - hero.pos[1]),
+                        reverse=True,
+                    )
                     target_pos = unowned_mines[0]
                 else:
                     return None
 
                 # Plan path to target
-                path_to_target, dist_to_target = bfs_from_xy_to_xy(game_map, hero.pos, target_pos)
+                path_to_target, dist_to_target = bfs_from_xy_to_xy(
+                    game_map, hero.pos, target_pos
+                )
 
                 # If life is too low to reach, plan a tavern stop
                 if hero.life < dist_to_target * 5 + 20:
-                    taverns = list(getattr(game, 'taverns_locs', []))
+                    taverns = list(getattr(game, "taverns_locs", []))
                     if not taverns:
                         return None
                     # Find the tavern with the shortest actual path to the target
                     best_tavern = None
-                    best_distance = float('inf')
+                    best_distance = float("inf")
                     for t in taverns:
                         _, dist = bfs_from_xy_to_xy(game_map, t, target_pos)
                         if dist is not None and dist < best_distance:
@@ -226,8 +298,12 @@ class AI(AIBase):
                     tavern_near_target = best_tavern
                     if tavern_near_target is None:
                         return None
-                    path_to_tavern, dist_to_tavern = bfs_from_xy_to_xy(game_map, hero.pos, tavern_near_target)
-                    path_tavern_to_target, _ = bfs_from_xy_to_xy(game_map, tavern_near_target, target_pos)
+                    path_to_tavern, dist_to_tavern = bfs_from_xy_to_xy(
+                        game_map, hero.pos, tavern_near_target
+                    )
+                    path_tavern_to_target, _ = bfs_from_xy_to_xy(
+                        game_map, tavern_near_target, target_pos
+                    )
                     full_path = path_to_tavern + path_tavern_to_target[1:]
                     self.explore_path = full_path
                     return (full_path[:2], Actions.EXPLORE)
@@ -240,18 +316,20 @@ class AI(AIBase):
         def wait():
             return [hero.pos, hero.pos], Actions.WAIT
 
-        policy_priority = [end_game_if,
-                           defend_mines_if,
-                           go_to_tavern_if,
-                           opportunistic_kill_if,
-                           do_nearest_if,
-                           attack_richest_if,
-                           attack_weakest_if,
-                           attack_nearest_if,
-                           suicide,
-                           explore_if_factory("take_unowned_mine"),
-                           explore_if_factory("attack_enemy"),
-                           wait]
+        policy_priority = [
+            end_game_if,
+            defend_mines_if,
+            go_to_tavern_if,
+            opportunistic_kill_if,
+            do_nearest_if,
+            attack_richest_if,
+            attack_weakest_if,
+            attack_nearest_if,
+            suicide,
+            explore_if_factory("take_unowned_mine"),
+            explore_if_factory("attack_enemy"),
+            wait,
+        ]
 
         path_and_action = None
         i = 0
@@ -276,26 +354,32 @@ class AI(AIBase):
 
             # Print nearest targets info
             try:
-                nearest_mine_path, nearest_mine_dist = bfs_from_xy_to_nearest_char(game_map,
-                                                                                   getattr(hero, 'pos', (0, 0)),
-                                                                                   MapElements.MINE)
-                print(f"Nearest mine: path={nearest_mine_path}, distance={nearest_mine_dist}")
+                nearest_mine_path, nearest_mine_dist = bfs_from_xy_to_nearest_char(
+                    game_map, getattr(hero, "pos", (0, 0)), MapElements.MINE
+                )
+                print(
+                    f"Nearest mine: path={nearest_mine_path}, distance={nearest_mine_dist}"
+                )
             except Exception as e:
                 print(f"Error getting nearest mine: {e}")
 
             try:
-                nearest_enemy_path, nearest_enemy_dist = bfs_from_xy_to_nearest_char(game_map,
-                                                                                     getattr(hero, 'pos', (0, 0)),
-                                                                                     MapElements.ENEMY)
-                print(f"Nearest enemy: path={nearest_enemy_path}, distance={nearest_enemy_dist}")
+                nearest_enemy_path, nearest_enemy_dist = bfs_from_xy_to_nearest_char(
+                    game_map, getattr(hero, "pos", (0, 0)), MapElements.ENEMY
+                )
+                print(
+                    f"Nearest enemy: path={nearest_enemy_path}, distance={nearest_enemy_dist}"
+                )
             except Exception as e:
                 print(f"Error getting nearest enemy: {e}")
 
             try:
-                nearest_tavern_path, nearest_tavern_dist = bfs_from_xy_to_nearest_char(game_map,
-                                                                                       getattr(hero, 'pos', (0, 0)),
-                                                                                       MapElements.TAVERN)
-                print(f"Nearest tavern: path={nearest_tavern_path}, distance={nearest_tavern_dist}")
+                nearest_tavern_path, nearest_tavern_dist = bfs_from_xy_to_nearest_char(
+                    game_map, getattr(hero, "pos", (0, 0)), MapElements.TAVERN
+                )
+                print(
+                    f"Nearest tavern: path={nearest_tavern_path}, distance={nearest_tavern_dist}"
+                )
             except Exception as e:
                 print(f"Error getting nearest tavern: {e}")
 
@@ -311,7 +395,8 @@ class AI(AIBase):
             print("Enemies:")
             for i, enemy in enumerate(enemies):
                 print(
-                    f"  Enemy {i}: pos={getattr(enemy, 'pos', 'None')}, life={getattr(enemy, 'life', 'None')}, mines={getattr(enemy, 'mines', 'None')}, mine_count={getattr(enemy, 'mine_count', 'None')}")
+                    f"  Enemy {i}: pos={getattr(enemy, 'pos', 'None')}, life={getattr(enemy, 'life', 'None')}, mines={getattr(enemy, 'mines', 'None')}, mine_count={getattr(enemy, 'mine_count', 'None')}"
+                )
 
             # Print policy results
             print("Policy results:")
@@ -325,7 +410,10 @@ class AI(AIBase):
             print("=== END DEBUG INFO ===")
 
             # Fallback to wait action
-            path_and_action = ([getattr(hero, 'pos', (0, 0)), getattr(hero, 'pos', (0, 0))], Actions.WAIT)
+            path_and_action = (
+                [getattr(hero, "pos", (0, 0)), getattr(hero, "pos", (0, 0))],
+                Actions.WAIT,
+            )
 
         move = Directions.get_direction(hero.pos, path_and_action[0][1])
         # If nothing to do, stay still or chase random enemy mine
@@ -333,5 +421,5 @@ class AI(AIBase):
             path=path_and_action[0],
             action=path_and_action[1],
             decisions=[path_and_action[1]],
-            hero_move=move
+            hero_move=move,
         )
