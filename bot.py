@@ -10,6 +10,7 @@ ACTIONS = ["Go mine", "Go beer", "Go enemy"]
 
 class Bot:
     """THis is your bot"""
+
     def __init__(self, brain):
         self.running = True
         self.state = {}
@@ -40,7 +41,7 @@ class Bot:
     def move(self, state):
         """Return store data provided by A.I
         and return selected move"""
-        self.state = state        
+        self.state = state
         # Store status for later report
         try:
             self.hero_last_move = self.hero_move
@@ -56,19 +57,21 @@ class Bot:
             # First move has no previous move
             pass
         self.game = Game(self.state)
-        
+
         ################################################################
         # Put your call to AI code here
         ################################################################
 
         self.ai.process(self.game)
-        self.path_to_goal, \
-            self.action, \
-            self.decision, \
-            self.hero_move, \
-            self.nearest_enemy_pos, \
-            self.nearest_mine_pos, \
-            self.nearest_tavern_pos = self.ai.decide()
+        (
+            self.path_to_goal,
+            self.action,
+            self.decision,
+            self.hero_move,
+            self.nearest_enemy_pos,
+            self.nearest_mine_pos,
+            self.nearest_tavern_pos,
+        ) = self.ai.decide()
 
         ################################################################
         # /AI
@@ -92,4 +95,3 @@ class Bot:
             # First move has no previous move and no game
             pass
         self.game = Game(self.state)
-        

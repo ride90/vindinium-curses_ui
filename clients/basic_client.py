@@ -41,8 +41,12 @@ class ClientWithSaveAndLoad:
                 self.config.game_mode = config_parser.get("game", "game_mode")
                 self.config.map_name = config_parser.get("game", "map_name")
                 self.config.key = config_parser.get("game", "key")
-                self.config.number_of_games = config_parser.getint("game", "number_of_games")
-                self.config.number_of_turns = config_parser.getint("game", "number_of_turns")
+                self.config.number_of_games = config_parser.getint(
+                    "game", "number_of_games"
+                )
+                self.config.number_of_turns = config_parser.getint(
+                    "game", "number_of_turns"
+                )
         except (IOError, configparser.Error) as e:
             print("Error while loading config file", config_file_name, ":", e)
             quit(1)
@@ -78,10 +82,10 @@ class ClientWithSaveAndLoad:
     def save_game(self):
         user_home_dir = os.path.expanduser("~")
         try:
-            game_id = self.state['game']["id"]
+            game_id = self.state["game"]["id"]
         except KeyError:
             try:
-                game_id = self.states[0]['game']["id"]
+                game_id = self.states[0]["game"]["id"]
             except IndexError:
                 self.pprint("No states available for this game, unable to save game.")
                 return
@@ -118,7 +122,6 @@ class ClientWithSaveAndLoad:
         return self.bot.clone_me()
 
 
-
 class BasicClient(ClientWithSaveAndLoad):
     def __init__(self, config=Config()):
         super().__init__(config)
@@ -142,7 +145,7 @@ class BasicClient(ClientWithSaveAndLoad):
 
                 gold = 0
                 winner = ("Noone", -1)
-                if self.bot.game and hasattr(self.bot.game, 'heroes'):
+                if self.bot.game and hasattr(self.bot.game, "heroes"):
                     for player in self.bot.game.heroes:
                         if int(player.gold) > gold:
                             winner = (player.name, player.bot_id)
@@ -150,11 +153,16 @@ class BasicClient(ClientWithSaveAndLoad):
                     if winner[1] == self.bot.game.hero.bot_id:
                         self.victory += 1
                 self.pprint("* " + winner[0] + " wins. ******************")
-                summary = str(i + 1) + "/" + str(self.config.number_of_games),
+                summary = (str(i + 1) + "/" + str(self.config.number_of_games),)
                 str(self.victory) + "/" + str(i + 1),
                 str(self.time_out) + "/" + str(i + 1)
                 self.pprint(summary)
-                self.pprint("Game finished: " + str(i + 1) + "/" + str(self.config.number_of_games))
+                self.pprint(
+                    "Game finished: "
+                    + str(i + 1)
+                    + "/"
+                    + str(self.config.number_of_games)
+                )
 
     def replay(self):
         """Replay last game"""
@@ -171,7 +179,12 @@ class BasicClient(ClientWithSaveAndLoad):
                         winner = player.name
                         gold = int(player.gold)
                 self.pprint("**** " + winner + " wins. ****")
-                self.pprint("Game finished: " + str(i + 1) + "/" + str(self.config.number_of_games))
+                self.pprint(
+                    "Game finished: "
+                    + str(i + 1)
+                    + "/"
+                    + str(self.config.number_of_games)
+                )
 
     def start_game(self):
         """Starts a game with all the required parameters"""
@@ -183,17 +196,19 @@ class BasicClient(ClientWithSaveAndLoad):
         # Default move is no move !
         direction = "Stay"
         # Create a requests session that will be used throughout the game
-        self.pprint('Connecting...')
+        self.pprint("Connecting...")
         self.session = requests.session()
-        if self.config.game_mode == 'arena':
-            self.pprint('Waiting for other players to join...')
+        if self.config.game_mode == "arena":
+            self.pprint("Waiting for other players to join...")
         try:
             # Get the initial state
             # May raise error if self.get_new_state() returns
             # no data or inconsistent data (network problem)
             self.state = self.get_new_game_state()
             if self.state is None:
-                self.pprint("Failed to get game state. Please check the error messages above.")
+                self.pprint(
+                    "Failed to get game state. Please check the error messages above."
+                )
                 self.running = False
                 return
 
@@ -210,7 +225,7 @@ class BasicClient(ClientWithSaveAndLoad):
 
             self.states.append(self.state)
             try:
-                self.pprint("Playing at: " + self.state['viewUrl'])
+                self.pprint("Playing at: " + self.state["viewUrl"])
             except KeyError as e:
                 self.pprint(f"Error accessing viewUrl: {e}")
                 self.pprint("State structure:", self.state)
@@ -251,31 +266,35 @@ class BasicClient(ClientWithSaveAndLoad):
                     return
                 if not self.is_game_over():
                     # Send the move and receive the updated game state
-                    self.game_url = self.state['playUrl']
+                    self.game_url = self.state["playUrl"]
                     self.state = self.send_move(direction)
                     self.states.append(self.state)
         # Clean up the session
         self.session.close()
 
     def get_new_game_state(self):
-        if self.config.game_mode == 'training':
+        if self.config.game_mode == "training":
             if len(self.config.map_name) > 0:
-                params = {'key': self.config.key, 'turns': self.config.number_of_turns, 'map': self.config.map_name}
+                params = {
+                    "key": self.config.key,
+                    "turns": self.config.number_of_turns,
+                    "map": self.config.map_name,
+                }
             else:
-                params = {'key': self.config.key, 'turns': self.config.number_of_turns}
-            api_endpoint = '/api/training'
-        elif self.config.game_mode == 'arena':
-            params = {'key': self.config.key}
-            api_endpoint = '/api/arena'
+                params = {"key": self.config.key, "turns": self.config.number_of_turns}
+            api_endpoint = "/api/training"
+        elif self.config.game_mode == "arena":
+            params = {"key": self.config.key}
+            api_endpoint = "/api/arena"
         else:
-            raise Exception('Unknown game mode')
+            raise Exception("Unknown game mode")
         try:
             full_url = self.config.server_url + api_endpoint
             self.pprint(f"Connecting to: {full_url}")
             # self.pprint(f"With parameters: {params}")
             headers = {
-                'Accept': 'application/json',
-                'Content-Type': 'application/x-www-form-urlencoded'
+                "Accept": "application/json",
+                "Content-Type": "application/x-www-form-urlencoded",
             }
             r = self.session.post(full_url, params, headers=headers, timeout=10 * 60)
             # self.pprint(f"Response status code: {r.status_code}")
@@ -323,30 +342,41 @@ class BasicClient(ClientWithSaveAndLoad):
 
     def is_game_over(self):
         try:
-            return self.state['game']['finished']
+            return self.state["game"]["finished"]
         except (TypeError, KeyError):
             return True
 
     def send_move(self, direction):
         try:
-            response = self.session.post(self.game_url, {'dir': direction}, timeout=TIMEOUT)
+            response = self.session.post(
+                self.game_url, {"dir": direction}, timeout=TIMEOUT
+            )
             if response.status_code == 200:
                 return response.json()
             else:
-                self.pprint("Error HTTP ", str(response.status_code), ": ", response.text)
+                self.pprint(
+                    "Error HTTP ", str(response.status_code), ": ", response.text
+                )
                 self.time_out += 1
                 self.running = False
-                return {'game': {'finished': True}}
+                return {"game": {"finished": True}}
         except requests.exceptions.RequestException as e:
             self.pprint("Error at client.move;", str(e))
             self.running = False
-            return {'game': {'finished': True}}
+            return {"game": {"finished": True}}
 
 
 if __name__ == "__main__":
     API_KEY = "s9sp71r9"  # Replace with your actual
     URL = "http://localhost"  # Replace with your actual server URL
-    config = Config(key=API_KEY, server_url=URL, game_mode="training", number_of_games=1, number_of_turns=10,
-                    map_name="m1", delay=0.1)
+    config = Config(
+        key=API_KEY,
+        server_url=URL,
+        game_mode="training",
+        number_of_games=1,
+        number_of_turns=10,
+        map_name="m1",
+        delay=0.1,
+    )
     client = BasicClient(config)
     client.play()

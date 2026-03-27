@@ -1,0 +1,4 @@
+timestamp,turn,decision,move,gold,life,number_of_mines
+2025-12-12T12:05:02.220405,0,SUICIDE,North,0,100,0
+2025-12-12T12:05:02.844077,4,WAIT,Stay,1,79,1
+2025-12-12T12:05:03.496480,8,WAIT,Stay,2,78,1

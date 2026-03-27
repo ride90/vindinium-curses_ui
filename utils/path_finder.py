@@ -1,8 +1,10 @@
 import collections
 
-NOT_FOUND = [], float('inf')
-DEFAULT_WALKABLE_CHARS = {' ', "X"}
-def bfs_from_xy_to_xy(grid, start_pos, target_pos, walkable_chars={' '}):
+NOT_FOUND = [], float("inf")
+DEFAULT_WALKABLE_CHARS = {" ", "X"}
+
+
+def bfs_from_xy_to_xy(grid, start_pos, target_pos, walkable_chars={" "}):
     """
     Core BFS function to find the shortest path in a grid to a specific coordinate.
     Hero steps into the target coordinate.
@@ -36,8 +38,10 @@ def bfs_from_xy_to_xy(grid, start_pos, target_pos, walkable_chars={' '}):
         # unless it's a specific end character we define (like 'X' or 'H' if we could walk *on* them).
         # For a specific coordinate, we assume we can step *on* it if it's not a wall.
         # Let's consider '#' always an obstacle for target position.
-        if grid[target_pos[0]][target_pos[1]] == '#':
-            print(f"Error: Target position {target_pos} contains an impassable obstacle ('#').")
+        if grid[target_pos[0]][target_pos[1]] == "#":
+            print(
+                f"Error: Target position {target_pos} contains an impassable obstacle ('#')."
+            )
             return NOT_FOUND
 
     queue = collections.deque([(start_pos, [start_pos])])
@@ -65,7 +69,7 @@ def bfs_from_xy_to_xy(grid, start_pos, target_pos, walkable_chars={' '}):
             # Check if the neighbor is walkable. The target itself is handled by the "if (r,c) == target_pos" above.
             # We must *not* include characters that are impassable walls (like '#').
             # We assume anything *not* in walkable_chars, and not the target, is an obstacle.
-            is_valid_move = (neighbor_char in ALL_WALKABLE_CHARS)
+            is_valid_move = neighbor_char in ALL_WALKABLE_CHARS
 
             # The target itself can be moved onto, so we explicitly allow moving onto the target coordinate.
             if (nr, nc) == target_pos:
@@ -81,7 +85,7 @@ def bfs_from_xy_to_xy(grid, start_pos, target_pos, walkable_chars={' '}):
     return NOT_FOUND  # No path found
 
 
-def bfs_from_xy_to_nearest_char(grid, start_pos, end_char, walkable_chars={' '}):
+def bfs_from_xy_to_nearest_char(grid, start_pos, end_char, walkable_chars={" "}):
     """
     Core BFS function to find the shortest path in a grid.
     Hero steps into the target location.
@@ -100,7 +104,11 @@ def bfs_from_xy_to_nearest_char(grid, start_pos, end_char, walkable_chars={' '})
     rows, cols = len(grid), len(grid[0])
 
     # Handle empty grid or invalid start_pos
-    if not rows or not cols or not (0 <= start_pos[0] < rows and 0 <= start_pos[1] < cols):
+    if (
+        not rows
+        or not cols
+        or not (0 <= start_pos[0] < rows and 0 <= start_pos[1] < cols)
+    ):
         return NOT_FOUND
 
     queue = collections.deque([(start_pos, [start_pos])])
@@ -128,7 +136,9 @@ def bfs_from_xy_to_nearest_char(grid, start_pos, end_char, walkable_chars={' '})
             neighbor_char = grid[nr][nc]
 
             # Check if the neighbor is generally walkable OR if it's the specific end_char
-            is_valid_move = (neighbor_char in ALL_WALKABLE_CHARS) or (neighbor_char == end_char)
+            is_valid_move = (neighbor_char in ALL_WALKABLE_CHARS) or (
+                neighbor_char == end_char
+            )
 
             # Check if not visited
             if is_valid_move and (nr, nc) not in visited:
@@ -140,10 +150,7 @@ def bfs_from_xy_to_nearest_char(grid, start_pos, end_char, walkable_chars={' '})
     return NOT_FOUND  # No path found
 
 
-def bfs_from_char_to_nearest_char(grid,
-                                  end_char,
-                                  start_char='@',
-                                  walkable={' '}):
+def bfs_from_char_to_nearest_char(grid, end_char, start_char="@", walkable={" "}):
     """
     Finds the shortest path from a starting character to an ending character in a grid,
     where the hero steps into the target location.

@@ -4,6 +4,7 @@ from utils.grid_helpers import replace_map_values
 from copy import deepcopy
 import math
 
+
 class AI(AIBase):
     MINE_GOLD_VALUE = 1
     TAVERN_HEAL_COST = 2
@@ -24,11 +25,11 @@ class AI(AIBase):
         game = self.game
         remaining_turns = game.max_turns - game.turn
         enemies = [h for h in game.heroes if h.bot_id != hero.bot_id]
-        
+
         # Mark owned mines on the map
         owned_mines = set(hero.mines)
-        game_map = replace_map_values(game.board_map, owned_mines, 'O')
-        
+        game_map = replace_map_values(game.board_map, owned_mines, "O")
+
         # Calculate game phase
         pct = game.turn / game.max_turns
         if pct < 0.25:
@@ -45,24 +46,28 @@ class AI(AIBase):
 
         # Update defensive mode
         self.defensive_mode = (
-            hero.life < critical_hp or
-            (phase == "end" and hero.mine_count > 0) or
-            any(e.life > hero.life + 20 for e in enemies)
+            hero.life < critical_hp
+            or (phase == "end" and hero.mine_count > 0)
+            or any(e.life > hero.life + 20 for e in enemies)
         )
 
         def evaluate_position(pos):
             """Evaluate how good a position is strategically"""
             score = 0
             # Distance to nearest mine
-            mine_path, mine_dist = bfs_from_xy_to_nearest_char(game_map, pos, MapElements.MINE)
+            mine_path, mine_dist = bfs_from_xy_to_nearest_char(
+                game_map, pos, MapElements.MINE
+            )
             if mine_path:
                 score += (10 - min(mine_dist, 10)) * 2
-            
+
             # Distance to nearest tavern
-            tavern_path, tavern_dist = bfs_from_xy_to_nearest_char(game_map, pos, MapElements.TAVERN)
+            tavern_path, tavern_dist = bfs_from_xy_to_nearest_char(
+                game_map, pos, MapElements.TAVERN
+            )
             if tavern_path:
-                score += (5 - min(tavern_dist, 5))
-            
+                score += 5 - min(tavern_dist, 5)
+
             # Distance to enemies
             for enemy in enemies:
                 enemy_path, enemy_dist = bfs_from_xy_to_xy(game_map, pos, enemy.pos)
@@ -71,16 +76,18 @@ class AI(AIBase):
                         score += (5 - min(enemy_dist, 5)) * 2
                     else:
                         score -= min(enemy_dist, 5)
-            
+
             return score
 
         def get_best_action():
             """Determine the best action based on current game state"""
             actions = []
-            
+
             # Critical health check
             if hero.life < critical_hp:
-                tavern_path, tavern_dist = bfs_from_xy_to_nearest_char(game_map, hero.pos, MapElements.TAVERN)
+                tavern_path, tavern_dist = bfs_from_xy_to_nearest_char(
+                    game_map, hero.pos, MapElements.TAVERN
+                )
                 if tavern_path and tavern_dist < remaining_turns:
                     return tavern_path, Actions.NEAREST_TAVERN
 
@@ -92,15 +99,18 @@ class AI(AIBase):
                         path, dist = bfs_from_xy_to_xy(game_map, hero.pos, mine)
                         if path and dist < 3:
                             return path, Actions.DEFEND_MINE
-                
+
                 # If no safe position, try to find one
                 best_pos = hero.pos
-                best_score = float('-inf')
+                best_score = float("-inf")
                 for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                     next_pos = (hero.pos[0] + dr, hero.pos[1] + dc)
-                    if (0 <= next_pos[0] < len(game_map) and 
-                        0 <= next_pos[1] < len(game_map[0]) and 
-                        game_map[next_pos[0]][next_pos[1]] in {' ', MapElements.HERO}):
+                    if (
+                        0 <= next_pos[0] < len(game_map)
+                        and 0 <= next_pos[1] < len(game_map[0])
+                        and game_map[next_pos[0]][next_pos[1]]
+                        in {" ", MapElements.HERO}
+                    ):
                         score = evaluate_position(next_pos)
                         if score > best_score:
                             best_score = score
@@ -115,9 +125,11 @@ class AI(AIBase):
                     path, dist = bfs_from_xy_to_xy(game_map, hero.pos, self.target_mine)
                     if path and dist < remaining_turns:
                         return path, Actions.TAKE_NEAREST_MINE
-                
+
                 # Find new target mine
-                mine_path, mine_dist = bfs_from_xy_to_nearest_char(game_map, hero.pos, MapElements.MINE)
+                mine_path, mine_dist = bfs_from_xy_to_nearest_char(
+                    game_map, hero.pos, MapElements.MINE
+                )
                 if mine_path and mine_dist < remaining_turns:
                     self.target_mine = mine_path[-1]
                     return mine_path, Actions.TAKE_NEAREST_MINE
@@ -127,30 +139,36 @@ class AI(AIBase):
                 # Look for weak enemies
                 for enemy in sorted(enemies, key=lambda e: e.life):
                     path, dist = bfs_from_xy_to_xy(game_map, hero.pos, enemy.pos)
-                    if path and dist < remaining_turns and hero.life > enemy.life + dist:
+                    if (
+                        path
+                        and dist < remaining_turns
+                        and hero.life > enemy.life + dist
+                    ):
                         return path, Actions.ATTACK_NEAREST
 
             # Default to finding best position
             best_pos = hero.pos
-            best_score = float('-inf')
+            best_score = float("-inf")
             for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                 next_pos = (hero.pos[0] + dr, hero.pos[1] + dc)
-                if (0 <= next_pos[0] < len(game_map) and 
-                    0 <= next_pos[1] < len(game_map[0]) and 
-                    game_map[next_pos[0]][next_pos[1]] in {' ', MapElements.HERO}):
+                if (
+                    0 <= next_pos[0] < len(game_map)
+                    and 0 <= next_pos[1] < len(game_map[0])
+                    and game_map[next_pos[0]][next_pos[1]] in {" ", MapElements.HERO}
+                ):
                     score = evaluate_position(next_pos)
                     if score > best_score:
                         best_score = score
                         best_pos = next_pos
-            
+
             if best_pos != hero.pos:
                 return [hero.pos, best_pos], Actions.WAIT
-            
+
             return [hero.pos], Actions.WAIT
 
         # Get the best action
         path, action = get_best_action()
-        
+
         # Calculate direction
         if len(path) > 1:
             direction = Directions.get_direction(path[0], path[1])
@@ -165,8 +183,5 @@ class AI(AIBase):
                 self.prev_positions.pop(0)
 
         return self._package(
-            path=path,
-            action=action,
-            decisions={},
-            hero_move=direction
-        ) 
+            path=path, action=action, decisions={}, hero_move=direction
+        )
